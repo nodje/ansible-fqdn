@@ -11,13 +11,12 @@
   when: ansible_hostname != fqdn
 
 - name: Build hosts file (backups will be made)
-  lineinfile:
-    dest: /etc/hosts
-    regexp: "^{{ public_ip }}"
-    line: "{{ public_ip }} {{ fqdn }} {{ hostname }}"
-    state: present
-    backup: yes
-  when: ansible_default_ipv4.address is defined
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ public_ip }} {{ fqdn }} {{ hostname }}
+    insertafter: EOF
+  when: ansible_default_ipv4.address is defined or public_ip is defined
   notify:
     - restart hostname
     - restart systemd-logind
